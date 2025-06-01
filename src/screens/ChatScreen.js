@@ -32,6 +32,7 @@ const ChatScreen = ({ route, navigation }) => {
   const [isTemplateComplete, setIsTemplateComplete] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editableTemplate, setEditableTemplate] = useState('');
+  const [efficiencyPrediction, setEfficiencyPrediction] = useState(null);
   const flatListRef = useRef(null);
 
   useEffect(() => {
@@ -67,6 +68,12 @@ const ChatScreen = ({ route, navigation }) => {
         setEditableTemplate(response.template.fullTemplate);
         setIsTemplateComplete(true);
 
+        // Verimlilik tahminini kaydet
+        if (response.efficiencyPrediction) {
+          console.log('🔥 Efficiency prediction kaydediliyor:', response.efficiencyPrediction);
+          setEfficiencyPrediction(response.efficiencyPrediction);
+        }
+
         const successMessage = {
           id: `success-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           text: response.message,
@@ -74,7 +81,7 @@ const ChatScreen = ({ route, navigation }) => {
           timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, successMessage]);
-        showTemplateCompleteMessage();
+        showTemplateCompleteMessage(response.efficiencyPrediction);
 
       } else if (typeof response === 'object' && !response.isComplete) {
         // AI soru soruyor
@@ -127,7 +134,13 @@ const ChatScreen = ({ route, navigation }) => {
         setProjectTemplate(response.template);
         setEditableTemplate(response.template.fullTemplate);
         setIsTemplateComplete(true);
-        showTemplateCompleteMessage();
+
+        // Verimlilik tahminini kaydet
+        if (response.efficiencyPrediction) {
+          setEfficiencyPrediction(response.efficiencyPrediction);
+        }
+
+        showTemplateCompleteMessage(response.efficiencyPrediction);
       } else {
         const aiMessage = {
           id: `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -183,6 +196,11 @@ const ChatScreen = ({ route, navigation }) => {
         setEditableTemplate(response.template.fullTemplate);
         setIsTemplateComplete(true);
 
+        // Verimlilik tahminini kaydet
+        if (response.efficiencyPrediction) {
+          setEfficiencyPrediction(response.efficiencyPrediction);
+        }
+
         const successMessage = {
           id: `success-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           text: response.message,
@@ -190,7 +208,7 @@ const ChatScreen = ({ route, navigation }) => {
           timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, successMessage]);
-        showTemplateCompleteMessage();
+        showTemplateCompleteMessage(response.efficiencyPrediction);
 
       } else if (typeof response === 'object' && !response.isComplete) {
         // AI soru soruyor
@@ -228,7 +246,7 @@ const ChatScreen = ({ route, navigation }) => {
     setIsLoading(false);
   };
 
-  const showTemplateCompleteMessage = () => {
+  const showTemplateCompleteMessage = (predictionData) => {
     const completeMessage = {
       id: `complete-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       text: "🎉 Harika! Proje template'iniz hazır. Template'i görüntüleyebilir, düzenleyebilir ve projenizi kaydedebilirsiniz.",
@@ -236,6 +254,79 @@ const ChatScreen = ({ route, navigation }) => {
       timestamp: new Date().toISOString()
     };
     setMessages(prev => [...prev, completeMessage]);
+
+    // Verimlilik tahminini göster
+    if (predictionData && predictionData.success) {
+      const predictionMessage = {
+        id: `prediction-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        text: `📊 **Uygulama Verimlilik Tahmini:**\n\n${formatPredictionMessage(predictionData)}`,
+        isUser: false,
+        timestamp: new Date().toISOString(),
+        isPrediction: true
+      };
+      setMessages(prev => [...prev, predictionMessage]);
+    } else if (predictionData && !predictionData.success) {
+      const errorPredictionMessage = {
+        id: `prediction-error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        text: "⚠️ Verimlilik tahmini alınamadı, ancak template'iniz hazır!",
+        isUser: false,
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errorPredictionMessage]);
+    }
+  };
+
+  const formatPredictionMessage = (predictionData) => {
+    if (!predictionData?.prediction) return "Tahmin verisi bulunamadı.";
+
+    const apiResponse = predictionData.prediction; // Ana API response
+    const prediction = apiResponse.prediction; // İçteki prediction objesi
+    const appData = predictionData.appData;
+
+    let message = `**📱 Uygulama Bilgileri:**\n`;
+    message += `• Ad: ${appData.app_name}\n`;
+    message += `• Kategori: ${appData.category}\n`;
+    message += `• Boyut: ${appData.size}\n`;
+    message += `• Tür: ${appData.app_type}\n\n`;
+
+    message += `**📊 Başarı Tahmini:**\n`;
+
+    // Yeni API formatına göre
+    if (prediction?.installs !== undefined) {
+      message += `• 📥 Tahmini İndirme: ${prediction.installs.toLocaleString('tr-TR')} kez\n`;
+      message += `• ⭐ Tahmini Rating: ${prediction.rating}/5.0\n`;
+      message += `• 💬 Tahmini Yorum Sayısı: ${prediction.reviews.toLocaleString('tr-TR')}\n\n`;
+
+      // Başarı kategorisi varsa göster
+      if (apiResponse.success_category) {
+        message += `**🎯 Değerlendirme:**\n`;
+        message += `${apiResponse.success_category}\n\n`;
+      }
+
+      // Rating'e göre öneri
+      if (prediction.rating >= 4.0) {
+        message += `**💡 Öneri:** 🟢 Mükemmel! Yüksek rating beklentisi var. Bu projeye devam etmeye değer!`;
+      } else if (prediction.rating >= 3.5) {
+        message += `**💡 Öneri:** 🟡 İyi bir başlangıç. Kullanıcı deneyimini iyileştirerek rating'i artırabilirsiniz.`;
+      } else {
+        message += `**💡 Öneri:** 🔴 Dikkat! Düşük rating tahmini. Proje fikrini gözden geçirmenizi öneririz.`;
+      }
+
+      // İndirme sayısına göre ek bilgi
+      if (prediction.installs > 10000) {
+        message += `\n\n🔥 **Popülerlik:** Yüksek indirme tahmini - bu nişte güçlü talep var!`;
+      } else if (prediction.installs > 5000) {
+        message += `\n\n📈 **Popülerlik:** Orta seviye indirme tahmini - iyi pazarlama ile artırılabilir.`;
+      } else {
+        message += `\n\n💭 **Popülerlik:** Düşük indirme tahmini - niş bir pazar veya pazarlama stratejisi gerekebilir.`;
+      }
+
+    } else {
+      // Fallback için eski logic
+      message += `• Sonuç: Veri formatı tanınmadı`;
+    }
+
+    return message;
   };
 
   const saveProject = async () => {
@@ -248,7 +339,15 @@ const ChatScreen = ({ route, navigation }) => {
         category: projectTemplate?.category || 'Genel',
         createdAt: new Date().toISOString(),
         originalIdea: initialMessage,
-        conversationHistory: messages
+        conversationHistory: messages,
+        efficiencyPrediction: efficiencyPrediction,
+        // Hızlı erişim için temel istatistikler
+        stats: efficiencyPrediction?.success && efficiencyPrediction.prediction ? {
+          expectedInstalls: efficiencyPrediction.prediction.prediction?.installs || 0,
+          expectedRating: efficiencyPrediction.prediction.prediction?.rating || 0,
+          expectedReviews: efficiencyPrediction.prediction.prediction?.reviews || 0,
+          successCategory: efficiencyPrediction.prediction.success_category || 'Bilinmiyor'
+        } : null
       };
 
       console.log('💾 Proje kaydediliyor:', project.title);
@@ -267,8 +366,8 @@ const ChatScreen = ({ route, navigation }) => {
           {
             text: 'Tamam',
             onPress: () => {
-              // Basit navigation - önce geri git, sonra Home'a git
-              navigation.goBack(); // CreateProject'e geri dön
+              // CreateProject ekranına geri dön ve input'u temizle
+              navigation.navigate('CreateProject', { clearInput: true });
               setTimeout(() => {
                 navigation.getParent()?.jumpTo('Home'); // Home tab'ına geç
               }, 100);
@@ -338,7 +437,10 @@ const ChatScreen = ({ route, navigation }) => {
             style={styles.headerGradient}
           >
             <Appbar.Header style={styles.appbar}>
-              <Appbar.BackAction onPress={() => navigation.goBack()} iconColor="#FFFFFF" />
+              <Appbar.BackAction onPress={() => {
+                // CreateProject ekranına geri dön ve input'u temizle
+                navigation.navigate('CreateProject', { clearInput: true });
+              }} iconColor="#FFFFFF" />
               <Appbar.Content
                 title="AI Asistan"
                 subtitle="Proje template'i oluşturuluyor"
@@ -376,6 +478,28 @@ const ChatScreen = ({ route, navigation }) => {
               <Card.Content>
                 <Text style={styles.templateTitle}>🎉 Template Hazır!</Text>
                 <Text style={styles.templateSubtitle}>Projeniz başarıyla oluşturuldu</Text>
+
+                {/* Verimlilik özeti */}
+                {efficiencyPrediction?.success && efficiencyPrediction.prediction && (
+                  <View style={styles.predictionSummary}>
+                    <Text style={styles.predictionTitle}>📊 Başarı Tahmini</Text>
+                    <View style={styles.predictionRow}>
+                      <Text style={styles.predictionLabel}>📥 İndirme:</Text>
+                      <Text style={styles.predictionValue}>
+                        {efficiencyPrediction.prediction.prediction?.installs?.toLocaleString('tr-TR') || 'N/A'}
+                      </Text>
+                    </View>
+                    <View style={styles.predictionRow}>
+                      <Text style={styles.predictionLabel}>⭐ Rating:</Text>
+                      <Text style={styles.predictionValue}>
+                        {efficiencyPrediction.prediction.prediction?.rating || 'N/A'}/5.0
+                      </Text>
+                    </View>
+                    <Text style={styles.predictionCategory}>
+                      {efficiencyPrediction.prediction.success_category || 'Analiz tamamlandı'}
+                    </Text>
+                  </View>
+                )}
 
                 <View style={styles.templateButtons}>
                   <Button
@@ -600,6 +724,36 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  predictionSummary: {
+    marginBottom: 16,
+  },
+  predictionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#059669',
+    marginBottom: 8,
+  },
+  predictionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  predictionLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginRight: 8,
+  },
+  predictionValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  predictionCategory: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#059669',
   },
 });
 

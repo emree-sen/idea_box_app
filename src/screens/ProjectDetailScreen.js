@@ -176,6 +176,80 @@ const ProjectDetailScreen = ({ route, navigation }) => {
           </Card.Content>
         </Card>
 
+        {/* Verimlilik İstatistikleri */}
+        {project.stats && (
+          <Card style={styles.statsCard}>
+            <Card.Content>
+              <Text variant="headlineSmall" style={styles.statsTitle}>
+                📊 Başarı Tahmini
+              </Text>
+
+              <Text variant="bodyMedium" style={styles.statsDescription}>
+                AI tabanlı analiz sonuçları
+              </Text>
+
+              <Divider style={styles.divider} />
+
+              <View style={styles.statsGrid}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statIcon}>📥</Text>
+                  <Text style={styles.statLabel}>Tahmini İndirme</Text>
+                  <Text style={styles.statValue}>
+                    {project.stats.expectedInstalls.toLocaleString('tr-TR')}
+                  </Text>
+                </View>
+
+                <View style={styles.statItem}>
+                  <Text style={styles.statIcon}>⭐</Text>
+                  <Text style={styles.statLabel}>Tahmini Rating</Text>
+                  <Text style={styles.statValue}>
+                    {project.stats.expectedRating}/5.0
+                  </Text>
+                </View>
+
+                <View style={styles.statItem}>
+                  <Text style={styles.statIcon}>💬</Text>
+                  <Text style={styles.statLabel}>Tahmini Yorum</Text>
+                  <Text style={styles.statValue}>
+                    {project.stats.expectedReviews.toLocaleString('tr-TR')}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.successCategoryContainer}>
+                <Text style={styles.successCategoryLabel}>📈 Değerlendirme</Text>
+                <Text style={styles.successCategory}>
+                  {project.stats.successCategory}
+                </Text>
+              </View>
+
+              {/* Geliştirilmiş analiz */}
+              {project.efficiencyPrediction?.prediction?.prediction && (
+                <View style={styles.detailedAnalysis}>
+                  <Text style={styles.analysisTitle}>🔍 Detaylı Analiz</Text>
+                  <Text style={styles.analysisText}>
+                    Bu proje {project.stats.expectedInstalls > 10000 ? 'yüksek' : project.stats.expectedInstalls > 5000 ? 'orta' : 'düşük'}
+                    {' '}indirme potansiyeli gösteriyor. Rating tahmini {project.stats.expectedRating >= 4.0 ? 'çok iyi' : project.stats.expectedRating >= 3.5 ? 'iyi' : 'geliştirilmeli'}
+                    {' '}seviyede. {project.stats.expectedReviews > 500 ? 'Yüksek kullanıcı etkileşimi bekleniyor.' : 'Orta seviye kullanıcı etkileşimi bekleniyor.'}
+                  </Text>
+                </View>
+              )}
+            </Card.Content>
+          </Card>
+        )}
+
+        {/* Verimlilik verisi olmayan projeler için bilgi */}
+        {!project.stats && (
+          <Card style={styles.noStatsCard}>
+            <Card.Content>
+              <Text style={styles.noStatsTitle}>📊 Başarı Tahmini</Text>
+              <Text style={styles.noStatsText}>
+                Bu proje için henüz verimlilik analizi mevcut değil. Yeni projelerinizde otomatik olarak AI tabanlı başarı tahmini oluşturulacak.
+              </Text>
+            </Card.Content>
+          </Card>
+        )}
+
         {/* Template Görüntüleme */}
         <Card style={styles.templateCard}>
           <Card.Content>
@@ -416,6 +490,87 @@ const styles = StyleSheet.create({
   saveButton: {
     flex: 1,
     backgroundColor: '#6366F1',
+  },
+  statsCard: {
+    marginBottom: 16,
+    elevation: 4,
+  },
+  statsTitle: {
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#6366F1',
+  },
+  statsDescription: {
+    lineHeight: 22,
+    marginBottom: 12,
+    color: '#333',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 12,
+  },
+  statItem: {
+    width: '33.33%',
+    marginBottom: 4,
+  },
+  statIcon: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontWeight: '600',
+    marginBottom: 4,
+    color: '#333',
+  },
+  statValue: {
+    fontWeight: 'bold',
+    color: '#6366F1',
+  },
+  successCategoryContainer: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6366F1',
+  },
+  successCategoryLabel: {
+    fontWeight: '600',
+    marginBottom: 4,
+    color: '#6366F1',
+  },
+  successCategory: {
+    fontWeight: 'bold',
+    color: '#6366F1',
+  },
+  detailedAnalysis: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6366F1',
+  },
+  analysisTitle: {
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#6366F1',
+  },
+  analysisText: {
+    lineHeight: 22,
+    color: '#333',
+  },
+  noStatsCard: {
+    marginBottom: 16,
+    elevation: 4,
+  },
+  noStatsTitle: {
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#6366F1',
+  },
+  noStatsText: {
+    lineHeight: 22,
+    color: '#333',
   },
 });
 

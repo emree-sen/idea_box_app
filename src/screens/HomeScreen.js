@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { GeminiService } from '../services/GeminiService';
 
 const HomeScreen = ({ navigation, route }) => {
   const [projects, setProjects] = useState([]);
@@ -122,6 +123,27 @@ const HomeScreen = ({ navigation, route }) => {
       <View style={styles.simpleCard}>
         <Text style={styles.simpleTitle}>{item.title}</Text>
         <Text style={styles.simpleDescription}>{item.description}</Text>
+
+        {/* Verimlilik istatistikleri */}
+        {item.stats && (
+          <View style={styles.predictionStats}>
+            <Text style={styles.statsTitle}>📊 Başarı Tahmini</Text>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>📥 Tahmini İndirme:</Text>
+              <Text style={styles.statValue}>{item.stats.expectedInstalls.toLocaleString('tr-TR')}</Text>
+            </View>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>⭐ Tahmini Rating:</Text>
+              <Text style={styles.statValue}>{item.stats.expectedRating}/5.0</Text>
+            </View>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>💬 Tahmini Yorum:</Text>
+              <Text style={styles.statValue}>{item.stats.expectedReviews.toLocaleString('tr-TR')}</Text>
+            </View>
+            <Text style={styles.successCategory}>{item.stats.successCategory}</Text>
+          </View>
+        )}
+
         <Text style={styles.simpleDate}>
           📅 {new Date(item.createdAt).toLocaleDateString('tr-TR')}
         </Text>
@@ -269,78 +291,6 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 4,
   },
-  cardWrapper: {
-    marginBottom: 16,
-  },
-  projectCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-  },
-  cardGradient: {
-    padding: 0,
-  },
-  cardContent: {
-    padding: 20,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  projectTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  projectSubtitle: {
-    color: '#E5E7EB',
-    fontSize: 12,
-    fontWeight: '500',
-    opacity: 0.9,
-  },
-  chevronIcon: {
-    margin: 0,
-  },
-  projectDescription: {
-    color: '#F3F4F6',
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  dateChip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  updateChip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-  },
-  chipText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '500',
-  },
-  cardActions: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  actionButton: {
-    borderRadius: 8,
-  },
-  viewButton: {
-    marginLeft: 'auto',
-  },
   emptyContainer: {
     flex: 1,
     margin: 16,
@@ -414,6 +364,47 @@ const styles = StyleSheet.create({
   },
   simpleButton: {
     flex: 1,
+  },
+  predictionStats: {
+    padding: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  statValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  successCategory: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#10B981',
+    marginTop: 8,
+    textAlign: 'center',
+    backgroundColor: '#F0FDF4',
+    padding: 8,
+    borderRadius: 6,
+  },
+  statsTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 12,
+    textAlign: 'center',
   },
 });
 

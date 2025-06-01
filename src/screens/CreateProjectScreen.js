@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,7 +14,8 @@ import {
   Button,
   Card,
   Chip,
-  Appbar
+  Appbar,
+  IconButton
 } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -35,6 +36,25 @@ const CreateProjectScreen = ({ navigation }) => {
     });
   };
 
+  const clearInput = () => {
+    setProjectIdea('');
+  };
+
+  // Focus listener to auto-clear when coming back from chat
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Eğer kullanıcı Chat ekranından geri dönüyorsa input'u temizle
+      const currentRoute = navigation.getState().routes[navigation.getState().index];
+      if (currentRoute.params?.clearInput) {
+        setProjectIdea('');
+        // Parametreyi temizle
+        navigation.setParams({ clearInput: undefined });
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -54,6 +74,13 @@ const CreateProjectScreen = ({ navigation }) => {
                 title="Yeni Proje Fikri"
                 titleStyle={styles.headerTitle}
               />
+              {projectIdea.length > 0 && (
+                <Appbar.Action
+                  icon="plus"
+                  onPress={clearInput}
+                  iconColor="#FFFFFF"
+                />
+              )}
             </Appbar.Header>
 
             <View style={styles.headerContent}>
@@ -117,12 +144,39 @@ const CreateProjectScreen = ({ navigation }) => {
                 outlineColor="#E5E7EB"
                 activeOutlineColor="#6366F1"
                 placeholderTextColor="#6B7280"
+                right={
+                  projectIdea.length > 0 ? (
+                    <TextInput.Icon
+                      icon="close"
+                      onPress={clearInput}
+                      iconColor="#6B7280"
+                    />
+                  ) : null
+                }
                 onFocus={() => {
                   setTimeout(() => {
                     // Bu scroll işlemi otomatik olarak KeyboardAvoidingView tarafından yapılacak
                   }, 300);
                 }}
               />
+
+              {/* Hızlı temizleme ve yeni proje butonu */}
+              {projectIdea.length > 0 && (
+                <View style={styles.inputActions}>
+                  <Button
+                    mode="outlined"
+                    onPress={clearInput}
+                    style={styles.clearButton}
+                    icon="delete-outline"
+                    compact
+                  >
+                    Temizle
+                  </Button>
+                  <Text style={styles.characterCount}>
+                    {projectIdea.length} karakter
+                  </Text>
+                </View>
+              )}
 
               <Text style={styles.suggestionsTitle}>💡 Hızlı başlangıç fikirleri:</Text>
               <View style={styles.suggestionChips}>
@@ -298,6 +352,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderLeft: 3,
     borderLeftColor: '#10B981',
+  },
+  inputActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  characterCount: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });
 
