@@ -1,29 +1,55 @@
 {
   "expo": {
-    "name": "app_creator_app",
+    "name": "IdeaBox",
     "slug": "app_creator_app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#6366F1"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.emreesen.ideabox",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Bu uygulama proje fikirlerinizi sesle kaydetmek için mikrofon erişimi gerektirir.",
+        "NSSpeechRecognitionUsageDescription": "Bu uygulama ses kayıtlarınızı metne çevirmek için konuşma tanıma özelliğini kullanır."
+      }
     },
     "android": {
+      "package": "com.emreesen.ideabox",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#6366F1"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Bu uygulama proje fikirlerinizi sesle kaydetmek için mikrofon erişimi gerektirir."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "89f56af3-2317-4229-a9a3-df6bbb8b7a89"
+      }
+    },
+    "owner": "emree-sen"
   }
 }
